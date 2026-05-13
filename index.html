@@ -263,10 +263,38 @@
             color: var(--xm-purple);
         }
 
+        /* Savings specific UI */
+        .savings-container {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 3px dashed var(--xm-border-purple);
+            display: none; /* hidden by default */
+        }
+        .savings-positive {
+            color: #1a7e38 !important; /* Green */
+        }
+        .savings-negative {
+            color: var(--xm-discount-red) !important; /* Red */
+        }
+        .offer-highlight-row {
+            background: var(--xm-purple-light);
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .offer-highlight-row .label {
+            color: var(--xm-purple);
+            font-weight: 700;
+        }
+
         /* Print formatting to make the PDF look like a clean quote */
         @media print {
             body {
                 background-color: white !important;
+            }
+            .offer-highlight-row {
+                background-color: white !important;
+                border: 1px dashed var(--xm-border-purple);
             }
             .calculator-card {
                 box-shadow: none !important;
@@ -275,7 +303,7 @@
                 padding: 0 !important;
                 max-width: 100% !important;
             }
-            button, .top-left-link {
+            button, .top-left-container, .top-left-link {
                 display: none !important; /* Hides all buttons on the printed page */
             }
             input {
@@ -297,10 +325,17 @@
             }
         }
 
-        .top-left-link {
+        .top-left-container {
             position: absolute;
             top: 20px;
             left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .top-left-link {
             color: var(--xm-purple);
             text-decoration: none;
             font-weight: 800;
@@ -330,9 +365,17 @@
 </head>
 <body>
 
-<a href="https://celestial.cable.comcast.com/knowledge/article-info/?query=240319165608377" target="_blank" class="top-left-link">
-    🔗 DEALS18
-</a>
+<div class="top-left-container">
+    <a href="https://celestial.cable.comcast.com/knowledge/article-info/?query=240319165608377" target="_blank" class="top-left-link">
+        🔗 DEALS18
+    </a>
+    <a href="https://xfinity-mobile-us-comparisontool.customersaas.com/#devices" target="_blank" class="top-left-link">
+        📱 Device Comparison Tool
+    </a>
+    <a href="https://www.xfinity.com/digital/mobile/byod?msockid=0ab94112d0c0607c181657a5d17c61b2" target="_blank" class="top-left-link">
+        🔍 BYOD Checker
+    </a>
+</div>
 
 <div class="calculator-card">
     <h2>XM Calculator</h2>
@@ -393,6 +436,16 @@
         <label for="offerCheck" class="checkbox-label">Apply $30 x 12 Monthly Discount</label>
     </div>
 
+    <hr style="border: 0; border-top: 2px solid var(--xm-border-light); margin: 30px 0;">
+
+    <h4>5. Compare & Save (Optional)</h4>
+    <div class="input-row">
+        <div class="input-group">
+            <label for="currentCarrierCost">Current Carrier Monthly Total ($)</label>
+            <input type="number" id="currentCarrierCost" placeholder="$0.00" min="0" step="0.01">
+        </div>
+    </div>
+
     <button onclick="calculateXMCalculatorCost()" class="fun-btn-primary">Calculate Total Monthly Cost</button>
 
     <div class="results" id="resultsBox">
@@ -421,6 +474,33 @@
         <div class="output-line total-line">
             <span class="label total-label">Monthly Total:</span>
             <span class="value total-value" id="grandTotalOutput"></span>
+        </div>
+
+        <div id="savingsSection" class="savings-container">
+            <h3>Savings Breakdown</h3>
+            
+            <div class="output-line">
+                <span class="label">Current Carrier:</span>
+                <span class="value" id="currentCarrierOutput"></span>
+            </div>
+            
+            <div class="output-line">
+                <span class="label">Monthly Savings (Base):</span>
+                <span class="value" id="baseMonthlySavingsOut"></span>
+            </div>
+            <div class="output-line">
+                <span class="label">Yearly Savings (Base):</span>
+                <span class="value" id="baseYearlySavingsOut"></span>
+            </div>
+
+            <div class="output-line offer-highlight-row">
+                <span class="label">Monthly Savings (w/ Offer):</span>
+                <span class="value" id="offerMonthlySavingsOut"></span>
+            </div>
+            <div class="output-line offer-highlight-row">
+                <span class="label">Yearly Savings (w/ Offer):</span>
+                <span class="value" id="offerYearlySavingsOut"></span>
+            </div>
         </div>
 
         <button onclick="window.print()" class="fun-btn-secondary" style="width: 100%; margin-top: 25px; margin-bottom: 0; text-align: center; display: flex; justify-content: center; align-items: center; gap: 8px;">
@@ -487,6 +567,7 @@
         const numWatches = getIntVal('numWatches');
         const numTablets = getIntVal('numTablets');
         const applyDiscount = document.getElementById('offerCheck').checked;
+        const currentCarrierCost = parseFloat(document.getElementById('currentCarrierCost').value) || 0;
 
         // --- 2. Calculate dynamic DPP installments sum ---
         const dppInputs = dppContainer.querySelectorAll('.dppInput');
@@ -529,6 +610,40 @@
         // D. Final Grand Total Logic (integrating standard pricing + capped pricing + dynamic DPP - standard discount)
         const totalBeforeDiscount = totalPhoneCost + cappedDeviceCost + totalDppCost;
         const finalGrandTotalBill = Math.max(0, totalBeforeDiscount - discountValue);
+
+        // E. Optional Savings Comparison Logic
+        const savingsSection = document.getElementById('savingsSection');
+        if (currentCarrierCost > 0) {
+            savingsSection.style.display = "block";
+            document.getElementById('currentCarrierOutput').innerText = "$" + currentCarrierCost.toFixed(2);
+
+            const baseMonthlySavings = currentCarrierCost - totalBeforeDiscount;
+            const baseYearlySavings = baseMonthlySavings * 12;
+
+            const offerMonthlySavings = currentCarrierCost - Math.max(0, totalBeforeDiscount - DISCOUNT_AMOUNT);
+            const offerYearlySavings = offerMonthlySavings * 12;
+
+            const formatSavings = (val, elId) => {
+                const el = document.getElementById(elId);
+                if (val > 0) {
+                    el.innerText = "+$" + val.toFixed(2);
+                    el.className = "value savings-positive";
+                } else if (val < 0) {
+                    el.innerText = "-$" + Math.abs(val).toFixed(2);
+                    el.className = "value savings-negative";
+                } else {
+                    el.innerText = "$0.00";
+                    el.className = "value";
+                }
+            };
+
+            formatSavings(baseMonthlySavings, 'baseMonthlySavingsOut');
+            formatSavings(baseYearlySavings, 'baseYearlySavingsOut');
+            formatSavings(offerMonthlySavings, 'offerMonthlySavingsOut');
+            formatSavings(offerYearlySavings, 'offerYearlySavingsOut');
+        } else {
+            savingsSection.style.display = "none";
+        }
 
         // --- 5. Display the results box ---
         const formatCurrency = (amount) => "$" + amount.toFixed(2);
