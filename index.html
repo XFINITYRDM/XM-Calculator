@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XM Mobile Calculator - Mix & Match, DPP, and Device Cap</title>
+    <title>XM Calculator</title>
     <style>
         :root {
-            --xm-purple: #6e2585; /* Main Xfinity brand purple */
-            --xm-purple-light: #f3e9f8; /* Light background purple */
-            --xm-purple-accent: #925da8; /* Lighter purple accent */
+            --xm-purple: #5c20b0; /* Updated to match the vibrant purple image */
+            --xm-purple-light: #f2ebfc; /* Lighter background purple */
+            --xm-purple-accent: #8b56d9; /* Lighter purple accent */
             --xm-text-dark: #1a1c1e;
             --xm-text-medium: #5c6166;
             --xm-discount-red: #d93025; /* Red for savings/discounts */
             --xm-border-light: #e1e4e8;
-            --xm-border-purple: #e8d0f1;
+            --xm-border-purple: #e3d2fc;
         }
 
         body {
@@ -31,10 +31,10 @@
             background: white;
             padding: 40px;
             border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(110, 37, 133, 0.1);
+            box-shadow: 0 20px 40px rgba(92, 32, 176, 0.15);
             width: 100%;
-            max-width: 550px; /* Slightly wider to accommodate DPP removals */
-            border: 1px solid rgba(110, 37, 133, 0.1);
+            max-width: 550px; 
+            border: 1px solid rgba(92, 32, 176, 0.1);
         }
         h2 {
             text-align: center;
@@ -95,7 +95,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background-color: #f7f0fb;
+            background-color: #f7f2fc;
             padding: 8px 12px;
             border-radius: 8px;
         }
@@ -160,7 +160,7 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 25px;
-            background-color: #f9f2ff;
+            background-color: #f9f4fc;
             padding: 15px 20px;
             border-radius: 14px;
             border: 2px solid var(--xm-border-purple);
@@ -200,7 +200,7 @@
             letter-spacing: 0.5px;
         }
         .fun-btn-primary:hover {
-            background-color: #5a1d6e;
+            background-color: #4b1a8f; /* Slightly darker shade for hover */
         }
         .fun-btn-primary:active {
             transform: translateY(1px);
@@ -214,7 +214,7 @@
             border-radius: 16px;
             border: 2px solid var(--xm-border-purple);
             display: none; /* Hidden until calculated */
-            box-shadow: 0 10px 20px rgba(110, 37, 133, 0.05);
+            box-shadow: 0 10px 20px rgba(92, 32, 176, 0.1);
         }
         .results h3 {
             margin-top: 0;
@@ -263,6 +263,65 @@
             color: var(--xm-purple);
         }
 
+        /* Print formatting to make the PDF look like a clean quote */
+        @media print {
+            body {
+                background-color: white !important;
+            }
+            .calculator-card {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            button, .top-left-link {
+                display: none !important; /* Hides all buttons on the printed page */
+            }
+            input {
+                border: 1px solid #ccc !important;
+                background: transparent !important;
+            }
+            .results {
+                background-color: white !important;
+                border: 2px solid var(--xm-border-purple) !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+            }
+            .offer-row {
+                background-color: white !important;
+            }
+            .device-cap-info {
+                background-color: white !important;
+                border: 1px solid #ccc !important;
+            }
+        }
+
+        .top-left-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--xm-purple);
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 14px;
+            background: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(92, 32, 176, 0.1);
+            border: 2px solid var(--xm-border-purple);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .top-left-link:hover {
+            background: var(--xm-purple);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(92, 32, 176, 0.2);
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -271,8 +330,12 @@
 </head>
 <body>
 
+<a href="https://celestial.cable.comcast.com/knowledge/article-info/?query=240319165608377" target="_blank" class="top-left-link">
+    🔗 DEALS18
+</a>
+
 <div class="calculator-card">
-    <h2>XM Mobile Calculator</h2>
+    <h2>XM Calculator</h2>
     
     <h4>1. Mix & Match Phone Plans</h4>
     <div class="input-row">
@@ -359,6 +422,11 @@
             <span class="label total-label">Monthly Total:</span>
             <span class="value total-value" id="grandTotalOutput"></span>
         </div>
+
+        <button onclick="window.print()" class="fun-btn-secondary" style="width: 100%; margin-top: 25px; margin-bottom: 0; text-align: center; display: flex; justify-content: center; align-items: center; gap: 8px;">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8H5V3H19V8ZM16 5H8V6H16V5ZM21 10C21.5523 10 22 10.4477 22 11V18H18V22H6V18H2V11C2 10.4477 2.44772 10 3 10H21ZM16 16H8V20H16V16ZM19 12C19.5523 12 20 12.4477 20 13C20 13.5523 19.5523 14 19 14C18.4477 14 18 13.5523 18 13C18 12.4477 18.4477 12 19 12Z"></path></svg>
+            Print / Save as PDF
+        </button>
     </div>
 </div>
 
@@ -435,19 +503,19 @@
 
         // --- 4. Main Math Logic ---
         
-        // A. Phone Mixing Logic ( preserved)
+        // A. Phone Mixing Logic
         const phoneSelectCost = numSelectLines * SELECT_PLAN_PRICE;
         const phonePlusCost = numPlusLines * PLUS_PLAN_PRICE;
         const totalPhoneCost = phoneSelectCost + phonePlusCost;
 
-        // B. Other Devices & Capped Logic (preserved)
+        // B. Other Devices & Capped Logic
         const rawWatchCost = numWatches * WATCH_PRICE;
         const rawTabletCost = numTablets * TABLET_PRICE;
         const rawDeviceCost = rawWatchCost + rawTabletCost;
         // We use Math.min to take the smaller value (capped at $35).
         const cappedDeviceCost = Math.min(rawDeviceCost, DEVICE_COST_CAP);
 
-        // C. Offer Discount Logic (preserved)
+        // C. Offer Discount Logic
         let discountValue = 0;
         const discountLine = document.getElementById('discountLine');
         if (applyDiscount) {
