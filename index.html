@@ -276,25 +276,11 @@
         .savings-negative {
             color: var(--xm-discount-red) !important; /* Red */
         }
-        .offer-highlight-row {
-            background: var(--xm-purple-light);
-            padding: 10px 12px;
-            border-radius: 8px;
-            margin: 8px 0;
-        }
-        .offer-highlight-row .label {
-            color: var(--xm-purple);
-            font-weight: 700;
-        }
 
         /* Print formatting to make the PDF look like a clean quote */
         @media print {
             body {
                 background-color: white !important;
-            }
-            .offer-highlight-row {
-                background-color: white !important;
-                border: 1px dashed var(--xm-border-purple);
             }
             .calculator-card {
                 box-shadow: none !important;
@@ -485,21 +471,8 @@
             </div>
             
             <div class="output-line">
-                <span class="label">Monthly Savings (Base):</span>
-                <span class="value" id="baseMonthlySavingsOut"></span>
-            </div>
-            <div class="output-line">
-                <span class="label">Yearly Savings (Base):</span>
-                <span class="value" id="baseYearlySavingsOut"></span>
-            </div>
-
-            <div class="output-line offer-highlight-row">
-                <span class="label">Monthly Savings (w/ Offer):</span>
-                <span class="value" id="offerMonthlySavingsOut"></span>
-            </div>
-            <div class="output-line offer-highlight-row">
-                <span class="label">Yearly Savings (w/ Offer):</span>
-                <span class="value" id="offerYearlySavingsOut"></span>
+                <span class="label">Estimated Monthly Savings:</span>
+                <span class="value" id="monthlySavingsOut"></span>
             </div>
         </div>
 
@@ -617,11 +590,9 @@
             savingsSection.style.display = "block";
             document.getElementById('currentCarrierOutput').innerText = "$" + currentCarrierCost.toFixed(2);
 
-            const baseMonthlySavings = currentCarrierCost - totalBeforeDiscount;
-            const baseYearlySavings = baseMonthlySavings * 12;
-
-            const offerMonthlySavings = currentCarrierCost - Math.max(0, totalBeforeDiscount - DISCOUNT_AMOUNT);
-            const offerYearlySavings = offerMonthlySavings * 12;
+            // Using totalBeforeDiscount means the savings strictly represent base plan savings 
+            // without relying on or factoring in the $30x12 offer.
+            const monthlySavings = currentCarrierCost - totalBeforeDiscount;
 
             const formatSavings = (val, elId) => {
                 const el = document.getElementById(elId);
@@ -637,10 +608,7 @@
                 }
             };
 
-            formatSavings(baseMonthlySavings, 'baseMonthlySavingsOut');
-            formatSavings(baseYearlySavings, 'baseYearlySavingsOut');
-            formatSavings(offerMonthlySavings, 'offerMonthlySavingsOut');
-            formatSavings(offerYearlySavings, 'offerYearlySavingsOut');
+            formatSavings(monthlySavings, 'monthlySavingsOut');
         } else {
             savingsSection.style.display = "none";
         }
