@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XM Mobile Calculator - Mix & Match, DPP, and Device Cap</title>
+    <style>
+        :root {
+            --xm-purple: #6e2585; /* Main Xfinity brand purple */
+            --xm-purple-light: #f3e9f8; /* Light background purple */
+            --xm-purple-accent: #925da8; /* Lighter purple accent */
+            --xm-text-dark: #1a1c1e;
+            --xm-text-medium: #5c6166;
+            --xm-discount-red: #d93025; /* Red for savings/discounts */
+            --xm-border-light: #e1e4e8;
+            --xm-border-purple: #e8d0f1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--xm-purple-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .calculator-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(110, 37, 133, 0.1);
+            width: 100%;
+            max-width: 550px; /* Slightly wider to accommodate DPP removals */
+            border: 1px solid rgba(110, 37, 133, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: var(--xm-purple);
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            font-size: 36px;
+        }
+        h4 {
+            color: var(--xm-purple-accent);
+            margin-bottom: 12px;
+            margin-top: 10px;
+            font-weight: 800;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .input-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+        .input-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--xm-text-medium);
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--xm-border-light);
+            border-radius: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background-color: #fff;
+            color: var(--xm-text-dark);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--xm-purple);
+            box-shadow: 0 0 0 4px var(--xm-border-purple);
+        }
+
+        .device-cap-info {
+            font-size: 13px;
+            color: var(--xm-purple-accent);
+            margin-top: -15px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #f7f0fb;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .cap-icon {
+            color: var(--xm-purple);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* DPP dynamic input row styling */
+        .dpp-input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease; /* Fun animation */
+        }
+        .remove-dpp-btn {
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+            border-radius: 5px;
+        }
+        .remove-dpp-btn:hover {
+            color: var(--xm-discount-red);
+            background-color: #fce8e6;
+        }
+        .proto-label {
+            font-size: 14px;
+            color: var(--xm-text-medium);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* Secondary "Fun" action buttons */
+        .fun-btn-secondary {
+            display: block;
+            width: auto;
+            padding: 10px 18px;
+            background: none;
+            border: 2px solid var(--xm-border-purple);
+            color: var(--xm-purple-accent);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 25px;
+            transition: background-color 0.2s;
+        }
+        .fun-btn-secondary:hover {
+            background-color: var(--xm-border-purple);
+            color: var(--xm-purple);
+        }
+
+        /* Offer row stylized checkbox */
+        .offer-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            background-color: #f9f2ff;
+            padding: 15px 20px;
+            border-radius: 14px;
+            border: 2px solid var(--xm-border-purple);
+        }
+        
+        .checkbox-label {
+            display: block;
+            margin-bottom: 0px; 
+            color: var(--xm-purple);
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        
+        input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            margin-top: 0;
+            cursor: pointer;
+            accent-color: var(--xm-purple);
+            border-radius: 6px;
+        }
+
+        /* Primary action button */
+        .fun-btn-primary {
+            width: 100%;
+            padding: 18px;
+            background-color: var(--xm-purple);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: background-color 0.2s, transform 0.1s;
+            letter-spacing: 0.5px;
+        }
+        .fun-btn-primary:hover {
+            background-color: #5a1d6e;
+        }
+        .fun-btn-primary:active {
+            transform: translateY(1px);
+        }
+
+        /* Results Box Styling */
+        .results {
+            margin-top: 40px;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 16px;
+            border: 2px solid var(--xm-border-purple);
+            display: none; /* Hidden until calculated */
+            box-shadow: 0 10px 20px rgba(110, 37, 133, 0.05);
+        }
+        .results h3 {
+            margin-top: 0;
+            text-align: center;
+            color: var(--xm-purple);
+            margin-bottom: 25px;
+            font-weight: 800;
+            font-size: 26px;
+        }
+        .output-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 16px 0;
+            font-size: 17px;
+            color: var(--xm-text-dark);
+        }
+        .output-line span.label {
+            color: var(--xm-text-medium);
+            font-weight: 500;
+        }
+        .output-line span.value {
+            font-weight: 700;
+        }
+        /* Discount line specific UI */
+        .discount-line span.value {
+            color: var(--xm-discount-red);
+        }
+        .discount-line, .dpp-line {
+            display: none; /* hide by default, unhide via JS if relevant */
+        }
+
+        .total-line {
+            border-top: 3px solid var(--xm-border-purple);
+            margin-top: 25px;
+            padding-top: 20px;
+        }
+        .total-value {
+            font-size: 32px;
+            color: var(--xm-purple);
+            font-weight: 900;
+        }
+        .total-label {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--xm-purple);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-card">
+    <h2>XM Mobile Calculator</h2>
+    
+    <h4>1. Mix & Match Phone Plans</h4>
+    <div class="input-row">
+        <div class="input-group">
+            <label for="numSelectLines">Select Lines ($30.00)</label>
+            <input type="number" id="numSelectLines" placeholder="0" min="0" step="1">
+        </div>
+        <div class="input-group">
+            <label for="numPlusLines">Plus Lines ($45.00)</label>
+            <input type="number" id="numPlusLines" placeholder="0" min="0" step="1">
+        </div>
+    </div>
+
+    <hr style="border: 0; border-top: 2px solid var(--xm-border-light); margin: 30px 0;">
+
+    <h4>2. Add Other Devices</h4>
+    <div class="input-row">
+        <div class="input-group">
+            <label for="numWatches">Watches ($10/ea)</label>
+            <input type="number" id="numWatches" placeholder="0" min="0" step="1">
+        </div>
+        <div class="input-group">
+            <label for="numTablets">Tablets ($20/ea)</label>
+            <input type="number" id="numTablets" placeholder="0" min="0" step="1">
+        </div>
+    </div>
+    <div class="device-cap-info">
+        <span class="cap-icon">ⓘ</span> 
+        Watches & tablets combined capped at **$35.00/mo**.
+    </div>
+
+    <hr style="border: 0; border-top: 2px solid var(--xm-border-light); margin: 30px 0;">
+
+    <h4>3. Device Installments (DPP)</h4>
+    <label>Manually enter monthly phone installments:</label>
+    <div id="dppContainer">
+        <div class="dpp-input-row">
+            <span class="proto-label">Installment 1:</span>
+            <input type="number" class="dppInput" placeholder="$0.00" min="0" step="0.01">
+            <button type="button" class="remove-dpp-btn" title="Remove" onclick="removeDppRow(this)">×</button>
+        </div>
+        <div class="dpp-input-row">
+            <span class="proto-label">Installment 2:</span>
+            <input type="number" class="dppInput" placeholder="$0.00" min="0" step="0.01">
+            <button type="button" class="remove-dpp-btn" title="Remove" onclick="removeDppRow(this)">×</button>
+        </div>
+    </div>
+    <button type="button" id="addDppBtn" class="fun-btn-secondary" onclick="addDppRow()">+ Add Another Installment</button>
+
+    <hr style="border: 0; border-top: 2px solid var(--xm-border-light); margin: 30px 0;">
+    
+    <h4>4. Limited Time Offer</h4>
+    <div class="offer-row">
+        <input type="checkbox" id="offerCheck">
+        <label for="offerCheck" class="checkbox-label">Apply $30 x 12 Monthly Discount</label>
+    </div>
+
+    <button onclick="calculateXMCalculatorCost()" class="fun-btn-primary">Calculate Total Monthly Cost</button>
+
+    <div class="results" id="resultsBox">
+        <h3>Your Estimated Monthly Total</h3>
+        
+        <div class="output-line">
+            <span class="label">Phone Cost (Mixed):</span>
+            <span class="value" id="phoneCostOutput"></span>
+        </div>
+        
+        <div class="output-line dpp-line" id="dppLine">
+            <span class="label">Device Installments (DPP):</span>
+            <span class="value" id="dppOutput"></span>
+        </div>
+
+        <div class="output-line">
+            <span class="label">Watch & Tablet Cost:</span>
+            <span class="value" id="deviceCostOutput"></span>
+        </div>
+
+        <div class="output-line discount-line" id="discountLine">
+            <span class="label">Special Offer:</span>
+            <span class="value" id="discountOutput"></span>
+        </div>
+
+        <div class="output-line total-line">
+            <span class="label total-label">Monthly Total:</span>
+            <span class="value total-value" id="grandTotalOutput"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SELECT_PLAN_PRICE = 30.00;
+    const PLUS_PLAN_PRICE = 45.00;
+    const WATCH_PRICE = 10.00;
+    const TABLET_PRICE = 20.00;
+    const DEVICE_COST_CAP = 35.00;
+    const DISCOUNT_AMOUNT = 30.00;
+    const MAX_DPP_ROWS = 10;
+
+    const dppContainer = document.getElementById('dppContainer');
+
+    // Fun secondary action: Add new installment box
+    function addDppRow() {
+        const currentRows = dppContainer.querySelectorAll('.dpp-input-row').length;
+        if (currentRows >= MAX_DPP_ROWS) {
+            alert(`Fun limit reached! You can add up to ${MAX_DPP_ROWS} individual installments.`);
+            return;
+        }
+
+        const newRow = document.createElement('div');
+        newRow.className = 'dpp-input-row fadeIn';
+        newRow.innerHTML = `
+            <span class="proto-label">Installment ${currentRows + 1}:</span>
+            <input type="number" class="dppInput" placeholder="$0.00" min="0" step="0.01">
+            <button type="button" class="remove-dpp-btn" title="Remove" onclick="removeDppRow(this)">×</button>
+        `;
+        dppContainer.appendChild(newRow);
+        updateDppLabels(); // Keep numbers sequential
+    }
+
+    // Dynamic row removal action
+    function removeDppRow(button) {
+        const row = button.closest('.dpp-input-row');
+        row.style.animation = 'fadeIn 0.3s ease reverse'; // Fun outro animation
+        setTimeout(() => {
+            row.remove();
+            updateDppLabels(); // re-index labels after removal
+        }, 250);
+    }
+
+    // Helper: Ensure labels remain sequential after adds or removes
+    function updateDppLabels() {
+        const labels = dppContainer.querySelectorAll('.proto-label');
+        labels.forEach((label, index) => {
+            label.textContent = `Installment ${index + 1}:`;
+        });
+    }
+
+    // Main calculation action
+    function calculateXMCalculatorCost() {
+        // --- 1. Get values from standard inputs ---
+        const getIntVal = (id) => parseInt(document.getElementById(id).value) || 0;
+        const numSelectLines = getIntVal('numSelectLines');
+        const numPlusLines = getIntVal('numPlusLines');
+        const numWatches = getIntVal('numWatches');
+        const numTablets = getIntVal('numTablets');
+        const applyDiscount = document.getElementById('offerCheck').checked;
+
+        // --- 2. Calculate dynamic DPP installments sum ---
+        const dppInputs = dppContainer.querySelectorAll('.dppInput');
+        let totalDppCost = 0;
+        dppInputs.forEach(input => {
+            totalDppCost += parseFloat(input.value) || 0;
+        });
+
+        // --- 3. Validate overall inputs (require at least one entry) ---
+        if (numSelectLines === 0 && numPlusLines === 0 && numWatches === 0 && numTablets === 0 && totalDppCost === 0) {
+            alert("Please enter the number of devices, lines, or installments you want to calculate.");
+            return;
+        }
+
+        // --- 4. Main Math Logic ---
+        
+        // A. Phone Mixing Logic ( preserved)
+        const phoneSelectCost = numSelectLines * SELECT_PLAN_PRICE;
+        const phonePlusCost = numPlusLines * PLUS_PLAN_PRICE;
+        const totalPhoneCost = phoneSelectCost + phonePlusCost;
+
+        // B. Other Devices & Capped Logic (preserved)
+        const rawWatchCost = numWatches * WATCH_PRICE;
+        const rawTabletCost = numTablets * TABLET_PRICE;
+        const rawDeviceCost = rawWatchCost + rawTabletCost;
+        // We use Math.min to take the smaller value (capped at $35).
+        const cappedDeviceCost = Math.min(rawDeviceCost, DEVICE_COST_CAP);
+
+        // C. Offer Discount Logic (preserved)
+        let discountValue = 0;
+        const discountLine = document.getElementById('discountLine');
+        if (applyDiscount) {
+            discountValue = DISCOUNT_AMOUNT;
+            discountLine.style.display = "flex"; // Show line item in results
+        } else {
+            discountValue = 0;
+            discountLine.style.display = "none"; // Hide line item in results
+        }
+
+        // D. Final Grand Total Logic (integrating standard pricing + capped pricing + dynamic DPP - standard discount)
+        const totalBeforeDiscount = totalPhoneCost + cappedDeviceCost + totalDppCost;
+        const finalGrandTotalBill = Math.max(0, totalBeforeDiscount - discountValue);
+
+        // --- 5. Display the results box ---
+        const formatCurrency = (amount) => "$" + amount.toFixed(2);
+
+        // Populate sub-costs
+        document.getElementById('phoneCostOutput').innerText = formatCurrency(totalPhoneCost);
+        
+        // Populate and unhide DPP output only if total exists
+        const dppLine = document.getElementById('dppLine');
+        if (totalDppCost > 0) {
+            document.getElementById('dppOutput').innerText = formatCurrency(totalDppCost);
+            dppLine.style.display = "flex";
+        } else {
+            dppLine.style.display = "none";
+        }
+
+        document.getElementById('deviceCostOutput').innerText = formatCurrency(cappedDeviceCost);
+        document.getElementById('discountOutput').innerText = "-" + formatCurrency(discountValue);
+
+        // Populate dynamic final total
+        document.getElementById('grandTotalOutput').innerText = formatCurrency(finalGrandTotalBill);
+
+        // Reveal results card
+        document.getElementById('resultsBox').style.display = "block";
+    }
+</script>
+
+</body>
+</html>
